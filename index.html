@@ -224,7 +224,7 @@ const setup = {
   mode:'group', teamA:'A팀', teamB:'B팀',
   names:'민준\n서연\n지호\n하은\n도윤',
   size:25, absent:'', split:'oddeven', classA:'1팀', classB:'2팀',
-  hints:true, autoSpeak:false, split_cache:null
+  hints:true, split_cache:null
 };
 let S = null;           // game state
 let angle = 20;         // needle angle (deg)
@@ -346,7 +346,6 @@ function renderSetup(){
       <h2>도움 기능</h2>
       <div class="checks">
         <label><input type="checkbox" id="hints" ${setup.hints?'checked':''}> 문장 틀 보여 주기 (Take ___ and get off at ___.)</label>
-        <label><input type="checkbox" id="autoSpeak" ${setup.autoSpeak?'checked':''}> 정답 문장 자동으로 읽어 주기</label>
       </div>
       <p class="err" id="err"></p>
       <div class="startrow"><button class="btn primary big" id="start">놀이 시작</button></div>
@@ -360,7 +359,6 @@ function renderSetup(){
   bind('size','size',true); bind('absent','absent',true); bind('split','split',true); bind('classA','classA',true); bind('classB','classB',true);
   const rs = document.getElementById('reshuffle'); if (rs) rs.onclick = ()=>{ computeSplit(true); renderSetup(); };
   document.getElementById('hints').onchange = e=> setup.hints = e.target.checked;
-  document.getElementById('autoSpeak').onchange = e=> setup.autoSpeak = e.target.checked;
   document.getElementById('start').onclick = startGame;
 }
 
@@ -379,7 +377,7 @@ function startGame(){
     if (!a.length || !b.length){ err.textContent='각 팀에 학생이 1명 이상 있어야 해요. 학생 수를 확인해 주세요.'; return; }
     sides = [{name:setup.classA.trim()||'1팀',score:0,members:a},{name:setup.classB.trim()||'2팀',score:0,members:b}];
   }
-  S = {mode:setup.mode, sides, round:1, ptr:0, hints:setup.hints, autoSpeak:setup.autoSpeak,
+  S = {mode:setup.mode, sides, round:1, ptr:0, hints:setup.hints,
        pools:[[],[]], phase:null, asker:null, answerer:null, dest:null, tr:null, getOff:null, spk:null, result:null};
   if (S.mode==='class') S.ptr = Math.random()<.5?0:1;
   renderGame();
@@ -465,11 +463,9 @@ function onTile(id){
   if (!S) return;
   if (S.phase==='dest'){
     S.dest = id; S.phase='spin'; beep(660,.08,'triangle',.07);
-    if (S.autoSpeak) speak(sent1());
     update();
   } else if (S.phase==='pick' && neighbors(S.dest).includes(id)){
     S.getOff = id; S.phase='judge'; beep(880,.08,'triangle',.07);
-    if (S.autoSpeak){ speak(sent2()+' '+sent3()); }
     update();
   } else if (S.phase==='judge' && neighbors(S.dest).includes(id)){
     S.getOff = id; update();
